@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TCG Database</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #121212; color: #fff; padding: 20px; margin: 0; }
+    h1 { text-align: center; margin-bottom: 20px; }
+    #search { width: 100%; max-width: 500px; display: block; margin: 0 auto 24px auto; padding: 12px; font-size: 16px; border-radius: 6px; border: none; box-sizing: border-box; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; max-width: 1200px; margin: 0 auto; }
+    .card { background: #1e1e1e; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #333; }
+    .card img { width: 100%; height: auto; border-radius: 6px; display: block; }
+    .card h3 { font-size: 15px; margin: 10px 0 0 0; } /* Removed bottom margin since the set number is gone */
+  </style>
+</head>
+<body>
+
+  <h1>Card Database</h1>
+  <input type="text" id="search" placeholder="Search cards by name..." onkeyup="filterCards()">
+  <div class="grid" id="card-grid"></div>
+
+  <script>
+    let cards = [];
+
+    // Fetch card data from the JSON file
+    fetch('cards.json')
+      .then(res => res.json())
+      .then(data => { 
+        cards = data; 
+        renderCards(cards); 
+      })
+      .catch(err => console.error("Could not load cards.json:", err));
+
+    function renderCards(data) {
+      const grid = document.getElementById('card-grid');
+      
+      // Each 'c' represents one row from your spreadsheet.
+      // c.image pulls from the "image" column, c.name pulls from the "name" column.
+      grid.innerHTML = data.map(c => `
+        <div class="card">
+          <img src="${c.image}" alt="${c.name}">
+          <h3>${c.name}</h3>
+        </div>
+      `).join('');
+    }
+
+    function filterCards() {
+      const query = document.getElementById('search').value.toLowerCase();
+      
+      // Filters rows based on the "name" column
+      const filtered = cards.filter(c => c.name.toLowerCase().includes(query));
+      renderCards(filtered);
+    }
+  </script>
+</body>
+</html>
