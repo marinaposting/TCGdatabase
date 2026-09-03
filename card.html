@@ -5,13 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Card Details</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #121212; color: #e0e0e0; padding: 20px; margin: 0;
-    background-color: rgba(0,0,4,0.9);
-    background-blend-mode: multiply;
-    background-image: url('https://github.com/marinaposting/TCGdatabase/blob/main/cards/background.jpg?raw=true');
-    background-position: center top;
-    background-repeat: no-repeat;
-    background-size: contain fixed; }
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #121212; 
+      color: #e0e0e0; 
+      padding: 20px; 
+      margin: 0;
+      background-color: rgba(0,0,4,0.9);
+      background-blend-mode: multiply;
+      background-image: url('https://github.com/marinaposting/TCGdatabase/blob/main/cards/background.jpg?raw=true');
+      background-position: center top;
+      background-repeat: no-repeat;
+      background-size: contain fixed; 
+    }
     .nav { max-width: 1000px; margin: 0 auto 20px auto; }
     .nav a { color: #4da6ff; text-decoration: none; font-size: 16px; }
     .nav a:hover { text-decoration: underline; }
@@ -22,7 +28,9 @@
     
     .right-col { flex: 1.5; min-width: 300px; background: #1e1e1e; padding: 24px; border-radius: 8px; border: 1px solid #333; }
     .right-col h1 { margin: 0 0 5px 0; color: #fff; }
+    
     .subtitle { font-size: 18px; color: #aaa; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #444; }
+    .sub-details { font-size: 14px; color: #888; margin-top: 6px; }
     
     .stat-block { margin-bottom: 20px; }
     .label { font-weight: bold; color: #fff; display: block; margin-bottom: 4px; }
@@ -59,10 +67,35 @@
         .catch(err => console.error(err));
     }
 
-    // Helper to format text: ignores "n/a" and converts \n to HTML line breaks
-    function formatText(text) {
+    // Helper to parse title (first line) and body text (remaining lines)
+    function parseEffect(text) {
       if (!text || text.toLowerCase() === "n/a") return null;
-      return text.replace(/\n/g, '&nbsp');
+      
+      const lines = text.split('\n');
+      const name = lines[0].trim();
+      const body = lines.slice(1).join('<br>').trim();
+      
+      return {
+        name: name,
+        body: body.length > 0 ? body : null
+      };
+    }
+
+    // Renders the stat block dynamically
+    function renderStatBlock(title, rawText) {
+      const effect = parseEffect(rawText);
+      if (!effect) return '';
+
+      let html = `<div class="stat-block">`;
+      html += `<span class="label">${title}: ${effect.name}</span>`;
+      
+      // Render the text box only if description body exists
+      if (effect.body) {
+        html += `<div class="text-box">${effect.body}</div>`;
+      }
+      
+      html += `</div>`;
+      return html;
     }
 
     // 3. Build the HTML layout
@@ -71,27 +104,33 @@
       
       html += `<div class="right-col">`;
       html += `<h1>${c.NAME}</h1>`;
-      html += `<div class="subtitle">${c["CARD TYPE"]} - ${c["HEALTH POINTS"]} | ${c.RARITY}</div>`;
-
-      // Conditionally add abilities and attacks if they aren't "n/a"
-      const ab1 = formatText(c["ABILITY 1"]);
-      if (ab1) html += `<div class="stat-block"><span class="label">Ability 1:</span><div class="text-box">${ab1}</div></div>`;
       
-      const ab2 = formatText(c["ABILITY 2"]);
-      if (ab2) html += `<div class="stat-block"><span class="label">Ability 2:</span><div class="text-box">${ab2}</div></div>`;
+      // Sub-type & Category check
+      const subType = (c["sub-type"] && c["sub-type"].toLowerCase() !== "n/a") ? c["sub-type"] : null;
+      const category = (c["category"] && c["category"].toLowerCase() !== "n/a") ? c["category"] : null;
+      const extraDetails = [subType, category].filter(Boolean).join(" • ");
 
-      const atk1 = formatText(c["ATTACK 1"]);
-      if (atk1) html += `<div class="stat-block"><span class="label">Attack 1:</span><div class="text-box">${atk1}</div></div>`;
+      html += `<div class="subtitle">`;
+      html += `<div>${c["CARD TYPE"]} - ${c["HEALTH POINTS"]} | ${c.RARITY}</div>`;
+      if (extraDetails) {
+        html += `<div class="sub-details">${extraDetails}</div>`;
+      }
+      html += `</div>`;
 
-      const atk2 = formatText(c["ATTACK 2"]);
-      if (atk2) html += `<div class="stat-block"><span class="label">Attack 2:</span><div class="text-box">${atk2}</div></div>`;
+      // Render Abilities and Attacks dynamically
+      html += renderStatBlock("Ability 1", c["ABILITY 1"]);
+      html += renderStatBlock("Ability 2", c["ABILITY 2"]);
+      html += renderStatBlock("Attack 1", c["ATTACK 1"]);
+      html += renderStatBlock("Attack 2", c["ATTACK 2"]);
 
       // Bottom meta grid for smaller stats
       html += `<div class="meta-grid">`;
       html += `<div><span class="label">Fuel Required:</span> ${c["FUEL RQ."]}</div>`;
-      html += `<div><span class="label">Stance:</span> ${formatText(c.STANCE) || "None"}</div>`;
       
-      if (c.artist && c.artist !== "unknown\nartist\n(pinterest)") {
+      const stanceText = (c.STANCE && c.STANCE.toLowerCase() !== "n/a") ? c.STANCE.replace(/\n/g, ' ') : "None";
+      html += `<div><span class="label">Stance:</span> ${stanceText}</div>`;
+      
+      if (c.artist && c.artist !== "n/a" && !c.artist.includes("unknown")) {
         html += `<div style="grid-column: span 2; margin-top: 10px;">
                    <span class="label">Artist:</span> <a href="${c.artist}" target="_blank" style="color: #4da6ff;">${c.artist}</a>
                  </div>`;
