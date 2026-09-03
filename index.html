@@ -19,7 +19,7 @@
 <body>
 
   <h1>Card Database</h1>
-  <input type="text" id="search" placeholder="Search cards by name..." onkeyup="filterCards()">
+  <div id="controls" style="display: flex; gap: 10px; max-width: 800px; margin: 0 auto 24px auto; justify-content: center;"> <input type="text" id="search" placeholder="Search cards by name..." onkeyup="applyFilterAndSort()" style="flex: 1; padding: 12px; border-radius: 6px; border: none;"> <select id="sort" onchange="applyFilterAndSort()" style="padding: 12px; border-radius: 6px; border: none; background: #333; color: white;"> <option value="name-asc">Name (A-Z)</option> <option value="name-desc">Name (Z-A)</option> <option value="num-asc">Number (Low to High)</option> <option value="num-desc">Number (High to Low)</option> <option value="text-asc">Card Text (A-Z)</option> </select> </div>
   <div class="grid" id="card-grid"></div>
 
   <script>
@@ -44,15 +44,28 @@
           </div>
         </a>
       `).join('');
+        }
+    
+    function applyFilterAndSort() {
+      const query = document.getElementById('search').value.toLowerCase();
+      const sortOption = document.getElementById('sort').value;
+      // 1. First, filter the cards by the search bar
+      let filteredAndSorted = cards.filter(c => c.NAME.toLowerCase().includes(query));
+      // 2. Then, sort the remaining cards based on the dropdown
+        filteredAndSorted.sort((a, b) => {
+        if (sortOption === 'name-asc') return a.NAME.localeCompare(b.NAME);
+        if (sortOption === 'name-desc') return b.NAME.localeCompare(a.NAME);
+        // Change 'COST' to whatever your number column is named in your JSON
+        if (sortOption === 'num-asc') return (Number(a.["FUEL RQ."]) || 0) - (Number(b.["FUEL RQ."]) || 0);
+        if (sortOption === 'num-desc') return (Number(b.["FUEL RQ."]) || 0) - (Number(a.["FUEL RQ."]) || 0);
+        // Change 'TYPE' to whatever your text/category column is named
+        if (sortOption === 'text-asc') return (a.["CARD TYPE"] || "").localeCompare(b.["CARD TYPE"] || "");
+        return 0;
+      });
+      // 3. Render the updated list
+      renderCards(filteredAndSorted);
     }
 
-    function filterCards() {
-      const query = document.getElementById('search').value.toLowerCase();
-      
-      // Filters rows based on the "name" column
-      const filtered = cards.filter(c => c.NAME.toLowerCase().includes(query));
-      renderCards(filtered);
-    }
   </script>
 </body>
 </html>
