@@ -40,7 +40,7 @@
         <a href="card.html?name=${encodeURIComponent(c.NAME)}" style="text-decoration: none; color: inherit;">
           <div class="card">
             <img src="${c.IMAGE}" alt="${c.NAME}">
-            <h3>${c.NAME}</h3>
+            <h3>${c.NAME} - ${c["CARD TYPE"]}</h3>
           </div>
         </a>
       `).join('');
