@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Card Details</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #121212; color: #e0e0e0; padding: 20px; margin: 0; }
+    .nav { max-width: 1000px; margin: 0 auto 20px auto; }
+    .nav a { color: #4da6ff; text-decoration: none; font-size: 16px; }
+    .nav a:hover { text-decoration: underline; }
+    
+    .container { display: flex; flex-wrap: wrap; gap: 40px; max-width: 1000px; margin: 0 auto; }
+    .left-col { flex: 1; min-width: 300px; }
+    .left-col img { width: 100%; max-width: 450px; border-radius: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); display: block; }
+    
+    .right-col { flex: 1.5; min-width: 300px; background: #1e1e1e; padding: 24px; border-radius: 8px; border: 1px solid #333; }
+    .right-col h1 { margin: 0 0 5px 0; color: #fff; }
+    .subtitle { font-size: 18px; color: #aaa; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #444; }
+    
+    .stat-block { margin-bottom: 20px; }
+    .label { font-weight: bold; color: #fff; display: block; margin-bottom: 4px; }
+    .text-box { background: #2a2a2a; padding: 12px; border-radius: 6px; line-height: 1.5; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #444; padding-top: 20px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="nav">
+    <a href="index.html">&larr; Back to Database</a>
+  </div>
+
+  <div class="container" id="card-container">
+    <p>Loading card data...</p>
+  </div>
+
+  <script>
+    // 1. Get the card name from the URL
+    const params = new URLSearchParams(window.location.search);
+    const cardName = params.get('name');
+
+    if (!cardName) {
+      document.getElementById('card-container').innerHTML = "<p>No card specified.</p>";
+    } else {
+      // 2. Fetch the JSON and find the matching card
+      fetch('cards.json')
+        .then(res => res.json())
+        .then(data => {
+          const card = data.find(c => c.NAME === cardName);
+          if (card) renderCard(card);
+          else document.getElementById('card-container').innerHTML = "<p>Card not found.</p>";
+        })
+        .catch(err => console.error(err));
+    }
+
+    // Helper to format text: ignores "n/a" and converts \n to HTML line breaks
+    function formatText(text) {
+      if (!text || text.toLowerCase() === "n/a") return null;
+      return text.replace(/\n/g, '<br>');
+    }
+
+    // 3. Build the HTML layout
+    function renderCard(c) {
+      let html = `<div class="left-col"><img src="${c.IMAGE}" alt="${c.NAME}"></div>`;
+      
+      html += `<div class="right-col">`;
+      html += `<h1>${c.NAME}</h1>`;
+      html += `<div class="subtitle">${c["CARD TYPE"]} - ${c["HEALTH POINTS"]} | ${c.RARITY}</div>`;
+
+      // Conditionally add abilities and attacks if they aren't "n/a"
+      const ab1 = formatText(c["ABILITY 1"]);
+      if (ab1) html += `<div class="stat-block"><span class="label">Ability 1:</span><div class="text-box">${ab1}</div></div>`;
+      
+      const ab2 = formatText(c["ABILITY 2"]);
+      if (ab2) html += `<div class="stat-block"><span class="label">Ability 2:</span><div class="text-box">${ab2}</div></div>`;
+
+      const atk1 = formatText(c["ATTACK 1"]);
+      if (atk1) html += `<div class="stat-block"><span class="label">Attack 1:</span><div class="text-box">${atk1}</div></div>`;
+
+      const atk2 = formatText(c["ATTACK 2"]);
+      if (atk2) html += `<div class="stat-block"><span class="label">Attack 2:</span><div class="text-box">${atk2}</div></div>`;
+
+      // Bottom meta grid for smaller stats
+      html += `<div class="meta-grid">`;
+      html += `<div><span class="label">Fuel Required:</span> ${c["FUEL RQ."]}</div>`;
+      html += `<div><span class="label">Stance:</span> ${formatText(c.STANCE) || "None"}</div>`;
+      
+      if (c.artist && c.artist !== "n/a") {
+        html += `<div style="grid-column: span 2; margin-top: 10px;">
+                   <span class="label">Artist:</span> <a href="${c.artist}" target="_blank" style="color: #4da6ff;">View Gallery</a>
+                 </div>`;
+      }
+      
+      html += `</div></div>`; // Close meta-grid and right-col
+      
+      document.getElementById('card-container').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
