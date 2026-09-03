@@ -6,31 +6,60 @@
   <title>TCG Database</title>
   <style>
   
-    body { font-family: Arial, sans-serif; background: #121212; color: #fff; padding: 20px; margin: 0; 
-    background-color: rgba(0,0,4,0.9);
-    background-blend-mode: multiply;
-     background-image: url('https://github.com/marinaposting/TCGdatabase/blob/main/cards/background.jpg?raw=true');
-     background-position: center top;
-     background-repeat: no-repeat;
-     background-size: 100% 100%;
-     background-attachment: fixed;
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #121212; 
+      color: #fff; 
+      padding: 20px; 
+      margin: 0; 
+      background-color: rgba(0,0,4,0.9);
+      background-blend-mode: multiply;
+      background-image: url('https://github.com/marinaposting/TCGdatabase/blob/main/cards/background.jpg?raw=true');
+      background-position: center top;
+      background-repeat: no-repeat;
+      background-size: 100% 100%;
+      background-attachment: fixed;
     }
     h1 { text-align: center; margin-bottom: 20px; }
     #search { width: 100%; max-width: 500px; display: block; margin: 0 auto 24px auto; padding: 12px; font-size: 16px; border-radius: 6px; border: none; box-sizing: border-box; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
-    @media (max-width: 600px) {.grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
-    .card {background: #1e1e1e; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #333; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .card:hover {transform: scale(1.15); z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
+    
+    .sections-container { max-width: 1400px; margin: 0 auto; }
+    .rarity-section { margin-bottom: 40px; }
+    .rarity-header { 
+      font-size: 22px; 
+      color: #4da6ff; 
+      border-bottom: 2px solid #444; 
+      padding-bottom: 8px; 
+      margin-bottom: 20px; 
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+    @media (max-width: 600px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
+    
+    .card { background: #1e1e1e; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #333; position: relative; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card:hover { transform: scale(1.15); z-index: 10; box-shadow: 0 10px 20px rgba(0,0,0,0.8); }
     .card img { width: 100%; height: auto; border-radius: 6px; display: block; }
-    .card h3 { font-size: 15px; margin: 10px 0 0 0; } /* Removed bottom margin since the set number is gone */
+    .card h3 { font-size: 15px; margin: 10px 0 0 0; }
   </style>
 </head>
 
 <body>
 
   <h1>Card Database</h1>
-  <div id="controls" style="display: flex; gap: 10px; max-width: 600px; margin: 0 auto 24px auto; justify-content: center;"> <input type="text" id="search" placeholder="Search cards by name..." onkeyup="applyFilterAndSort()" style="flex: 1; padding: 12px; border-radius: 6px; border: none;"> <select id="sort" onchange="applyFilterAndSort()" style="padding: 8px; border-radius: 10px; border: 1px solid; background: #333; color: white; height: 42px"> <option value="name-asc">Name (A-Z)</option> <option value="name-desc">Name (Z-A)</option> <option value="num-asc">Fuel (Low to High)</option> <option value="num-desc">Fuel (High to Low)</option> <option value="text-asc">Unit Type (A-Z)</option> </select> </div>
-  <div class="grid" id="card-grid"></div>
+  <div id="controls" style="display: flex; gap: 10px; max-width: 600px; margin: 0 auto 24px auto; justify-content: center;"> 
+    <input type="text" id="search" placeholder="Search name, subtype, attacks, stances..." onkeyup="applyFilterAndSort()" style="flex: 1; padding: 12px; border-radius: 6px; border: none;"> 
+    <select id="sort" onchange="applyFilterAndSort()" style="padding: 8px; border-radius: 10px; border: 1px solid; background: #333; color: white; height: 42px"> 
+      <option value="name-asc">Name (A-Z)</option> 
+      <option value="name-desc">Name (Z-A)</option> 
+      <option value="num-asc">Fuel (Low to High)</option> 
+      <option value="num-desc">Fuel (High to Low)</option> 
+      <option value="text-asc">Unit Type (A-Z)</option> 
+    </select> 
+  </div>
+  
+  <div id="card-container" class="sections-container"></div>
 
   <script>
     let cards = [];
@@ -45,34 +74,81 @@
       .catch(err => console.error("Could not load cards.json:", err));
 
     function renderCards(data) {
-      const grid = document.getElementById('card-grid');
-      grid.innerHTML = data.map(c => `
-        <a href="card.html?name=${encodeURIComponent(c.NAME)}" style="text-decoration: none; color: inherit;">
-          <div class="card">
-            <img src="${c.IMAGE}" alt="${c.NAME}">
-            <h3>${c.NAME} - ${c["CARD TYPE"]}</h3>
-          </div>
-        </a>
-      `).join('');
+      const container = document.getElementById('card-container');
+      
+      if (!data || data.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #aaa; margin-top: 40px;">No cards match your search.</p>';
+        return;
+      }
+
+      // 1. Group cards by RARITY dynamically
+      const grouped = {};
+      data.forEach(c => {
+        const rarity = c.RARITY || 'Uncategorized';
+        if (!grouped[rarity]) {
+          grouped[rarity] = [];
         }
+        grouped[rarity].push(c);
+      });
+
+      // 2. Render each group under its own section heading
+      let html = '';
+      for (const [rarity, groupCards] of Object.entries(grouped)) {
+        html += `
+          <div class="rarity-section">
+            <h2 class="rarity-header">${rarity}</h2>
+            <div class="grid">
+              ${groupCards.map(c => `
+                <a href="card.html?name=${encodeURIComponent(c.NAME)}" style="text-decoration: none; color: inherit;">
+                  <div class="card">
+                    <img src="${c.IMAGE}" alt="${c.NAME}">
+                    <h3>${c.NAME} - ${c["CARD TYPE"]}</h3>
+                  </div>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      container.innerHTML = html;
+    }
     
     function applyFilterAndSort() {
-      const query = document.getElementById('search').value.toLowerCase();
+      const query = document.getElementById('search').value.toLowerCase().trim();
       const sortOption = document.getElementById('sort').value;
-      // 1. First, filter the cards by the search bar
-      let filteredAndSorted = cards.filter(c => c.NAME.toLowerCase().includes(query));
-      // 2. Then, sort the remaining cards based on the dropdown
-        filteredAndSorted.sort((a, b) => {
+
+      // Filter cards by search criteria across multiple fields
+      let filteredAndSorted = cards.filter(c => {
+        if (!query) return true;
+
+        const fieldsToSearch = [
+          c["NAME"],
+          c["CARD TYPE"],
+          c["sub-type"],
+          c["category"],
+          c["ABILITY 1"],
+          c["ABILITY 2"],
+          c["ATTACK 1"],
+          c["ATTACK 2"],
+          c["STANCE"],
+        ];
+
+        return fieldsToSearch.some(field => 
+          field && typeof field === 'string' && field.toLowerCase().includes(query)
+        );
+      });
+
+      // Sort remaining cards within their respective rarity groups
+      filteredAndSorted.sort((a, b) => {
         if (sortOption === 'name-asc') return a.NAME.localeCompare(b.NAME);
         if (sortOption === 'name-desc') return b.NAME.localeCompare(a.NAME);
-        // Change 'COST' to whatever your number column is named in your JSON
         if (sortOption === 'num-asc') return (Number(a["FUEL RQ."]) || 0) - (Number(b["FUEL RQ."]) || 0);
         if (sortOption === 'num-desc') return (Number(b["FUEL RQ."]) || 0) - (Number(a["FUEL RQ."]) || 0);
-        // Change 'TYPE' to whatever your text/category column is named
         if (sortOption === 'text-asc') return (a["CARD TYPE"] || "").localeCompare(b["CARD TYPE"] || "");
         return 0;
       });
-      // 3. Render the updated list
+
       renderCards(filteredAndSorted);
     }
 
