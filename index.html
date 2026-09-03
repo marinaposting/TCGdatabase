@@ -35,14 +35,13 @@
 
     function renderCards(data) {
       const grid = document.getElementById('card-grid');
-      
-      // Each 'c' represents one row from your spreadsheet.
-      // c.image pulls from the "image" column, c.name pulls from the "name" column.
       grid.innerHTML = data.map(c => `
-        <div class="card">
-          <img src="${c.IMAGE}" alt="${c.NAME}">
-          <h3>${c.NAME}</h3>
-        </div>
+        <a href="card.html?name=${encodeURIComponent(c.NAME)}" style="text-decoration: none; color: inherit;">
+          <div class="card">
+            <img src="${c.IMAGE}" alt="${c.NAME}">
+            <h3>${c.NAME}</h3>
+          </div>
+        </a>
       `).join('');
     }
 
