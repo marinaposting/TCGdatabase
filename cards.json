@@ -45,7 +45,7 @@
     "sub-type": "n/a",
     "category": "n/a",
     "artist": "https://www.deviantart.com/sjofisk/gallery",
-    "IMAGE": "cards/carabinier-tier1.png"
+    "IMAGE": "cards/darkhound-tier1.png"
   },
   {
     "NAME": "GRENADIER",
@@ -61,7 +61,7 @@
     "sub-type": "soldier",
     "category": "ranged, explosive",
     "artist": "unknown\nartist\n(pinterest)",
-    "IMAGE": "cards/darkhound-tier1.png"
+    "IMAGE": "cards/grenadier-tier1.png"
   },
   {
     "NAME": "HARPOONEER",
@@ -77,7 +77,7 @@
     "sub-type": "n/a",
     "category": "ranged",
     "artist": "unknown\nartist\n(pinterest)",
-    "IMAGE": "cards/grenadier-tier1.png"
+    "IMAGE": "cards/harpooneer-tier1.png"
   },
   {
     "NAME": "KNIGHT",
@@ -93,7 +93,7 @@
     "sub-type": "soldier",
     "category": "n/a",
     "artist": "https://www.artstation.com/mylo",
-    "IMAGE": "cards/harpooneer-tier1.png"
+    "IMAGE": "cards/knight-tier1.png"
   },
   {
     "NAME": "MARKSMAN",
@@ -109,7 +109,7 @@
     "sub-type": "n/a",
     "category": "n/a",
     "artist": "https://vablo.artstation.com/albums/574054",
-    "IMAGE": "cards/knight-tier1.png"
+    "IMAGE": "cards/marksman-tier1.png"
   },
   {
     "NAME": "POISONER",
@@ -125,7 +125,7 @@
     "sub-type": "enhanced",
     "category": "ranged",
     "artist": "https://www.artstation.com/trufanov",
-    "IMAGE": "cards/marksman-tier1.png"
+    "IMAGE": "cards/poisoner-tier1.png"
   },
   {
     "NAME": "CARABINIER",
@@ -141,7 +141,7 @@
     "sub-type": "soldier",
     "category": "ranged",
     "artist": "https://tvist.artstation.com/",
-    "IMAGE": "cards/poisoner-tier1.png"
+    "IMAGE": "cards/carabinier-tier1.png"
   },
   {
     "NAME": "ROGUE",
