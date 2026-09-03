@@ -71,7 +71,7 @@
       
       html += `<div class="right-col">`;
       html += `<h1>${c.NAME}</h1>`;
-      html += `<div class="subtitle">${c["CARD TYPE"]} ${c["sub-type"]} ${c.category} - ${c["HEALTH POINTS"]} | ${c.RARITY}</div>`;
+      html += `<div class="subtitle">${c["CARD TYPE"]} - ${c["HEALTH POINTS"]} | ${c.RARITY}</div>`;
 
       // Conditionally add abilities and attacks if they aren't "n/a"
       const ab1 = formatText(c["ABILITY 1"]);
