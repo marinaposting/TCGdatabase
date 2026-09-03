@@ -49,7 +49,7 @@
       const query = document.getElementById('search').value.toLowerCase();
       
       // Filters rows based on the "name" column
-      const filtered = cards.filter(c => c.name.toLowerCase().includes(query));
+      const filtered = cards.filter(c => c.NAME.toLowerCase().includes(query));
       renderCards(filtered);
     }
   </script>
