@@ -85,9 +85,9 @@
       html += `<div><span class="label">Fuel Required:</span> ${c["FUEL RQ."]}</div>`;
       html += `<div><span class="label">Stance:</span> ${formatText(c.STANCE) || "None"}</div>`;
       
-      if (c.artist && c.artist !== "n/a") {
+      if (c.artist && c.artist !== "unknown\nartist\n(pinterest)") {
         html += `<div style="grid-column: span 2; margin-top: 10px;">
-                   <span class="label">Artist:</span> <a href="${c.artist}" target="_blank" style="color: #4da6ff;">View Gallery</a>
+                   <span class="label">Artist:</span> <a href="${c.artist}" target="_blank" style="color: #4da6ff;">${c.artist}</a>
                  </div>`;
       }
       
