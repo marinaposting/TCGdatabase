@@ -39,8 +39,8 @@
       // c.image pulls from the "image" column, c.name pulls from the "name" column.
       grid.innerHTML = data.map(c => `
         <div class="card">
-          <img src="${c.image}" alt="${c.name}">
-          <h3>${c.name}</h3>
+          <img src="${c.IMAGE}" alt="${c.NAME}">
+          <h3>${c.NAME}</h3>
         </div>
       `).join('');
     }
