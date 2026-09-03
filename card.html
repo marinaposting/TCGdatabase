@@ -56,7 +56,7 @@
     // Helper to format text: ignores "n/a" and converts \n to HTML line breaks
     function formatText(text) {
       if (!text || text.toLowerCase() === "n/a") return null;
-      return text.replace(/\n/g, '<br>');
+      return text.replace(/\n/g, '&nbsp');
     }
 
     // 3. Build the HTML layout
