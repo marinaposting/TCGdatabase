@@ -51,12 +51,13 @@
   <div id="controls" style="display: flex; gap: 10px; max-width: 600px; margin: 0 auto 24px auto; justify-content: center;"> 
     <input type="text" id="search" placeholder="Search name, subtype, attacks... (e.g: sword swing)" onkeyup="applyFilterAndSort()" style="flex: 1; padding: 12px; border-radius: 6px; border: none;"> 
     <select id="sort" onchange="applyFilterAndSort()" style="padding: 8px; border-radius: 10px; border: 1px solid; background: #333; color: white; height: 42px"> 
+      <option value="default">Default</option> 
       <option value="name-asc">Name (A-Z)</option> 
       <option value="name-desc">Name (Z-A)</option> 
       <option value="num-asc">Fuel (Low to High)</option> 
       <option value="num-desc">Fuel (High to Low)</option> 
       <option value="text-asc">Unit Type (A-Z)</option> 
-    </select> 
+    </select>
   </div>
   
   <div id="card-container" class="sections-container"></div>
@@ -73,55 +74,64 @@
       })
       .catch(err => console.error("Could not load cards.json:", err));
 
-    function renderCards(data) {
+    function renderCards(data, isDefaultSort = true) {
       const container = document.getElementById('card-container');
       
       if (!data || data.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #aaa; margin-top: 40px;">No cards match your search.</p>';
         return;
       }
-
-      // 1. Group cards by RARITY dynamically
-      const grouped = {};
-      data.forEach(c => {
-        const rarity = c.RARITY || 'Uncategorized';
-        if (!grouped[rarity]) {
-          grouped[rarity] = [];
-        }
-        grouped[rarity].push(c);
-      });
-
-      // 2. Render each group under its own section heading
-      let html = '';
-      for (const [rarity, groupCards] of Object.entries(grouped)) {
-        html += `
-          <div class="rarity-section">
-            <h2 class="rarity-header">${rarity}</h2>
-            <div class="grid">
-              ${groupCards.map(c => `
-                <a href="card.html?name=${encodeURIComponent(c.NAME)}" style="text-decoration: none; color: inherit;">
-                  <div class="card">
-                    <img src="${c.IMAGE}" alt="${c.NAME}">
-                    <h3>${c.NAME} - ${c["CARD TYPE"]}</h3>
-                  </div>
-                </a>
-              `).join('')}
+    
+      // Helper function to generate single card HTML
+      const createCardHTML = (c) => `
+        <a href="card.html?name=${encodeURIComponent(c.NAME)}" style="text-decoration: none; color: inherit;">
+          <div class="card">
+            <img src="${c.IMAGE}" alt="${c.NAME}">
+            <h3>${c.NAME} - ${c["CARD TYPE"]}</h3>
+          </div>
+        </a>
+      `;
+    
+      if (isDefaultSort) {
+        // 1. Group cards by RARITY dynamically
+        const grouped = {};
+        data.forEach(c => {
+          const rarity = c.RARITY || 'Uncategorized';
+          if (!grouped[rarity]) grouped[rarity] = [];
+          grouped[rarity].push(c);
+        });
+    
+        // 2. Render grouped by section
+        let html = '';
+        for (const [rarity, groupCards] of Object.entries(grouped)) {
+          html += `
+            <div class="rarity-section">
+              <h2 class="rarity-header">${rarity}</h2>
+              <div class="grid">
+                ${groupCards.map(createCardHTML).join('')}
+              </div>
             </div>
+          `;
+        }
+        container.innerHTML = html;
+      } else {
+        // Render flat list without rarity groups
+        container.innerHTML = `
+          <div class="grid">
+            ${data.map(createCardHTML).join('')}
           </div>
         `;
       }
-      
-      container.innerHTML = html;
     }
     
     function applyFilterAndSort() {
       const query = document.getElementById('search').value.toLowerCase().trim();
       const sortOption = document.getElementById('sort').value;
-
-      // Filter cards by search criteria across multiple fields
+    
+      // Filter cards by search criteria
       let filteredAndSorted = cards.filter(c => {
         if (!query) return true;
-
+    
         const fieldsToSearch = [
           c["NAME"],
           c["CARD TYPE"],
@@ -133,23 +143,25 @@
           c["ATTACK 2"],
           c["STANCE"],
         ];
-
+    
         return fieldsToSearch.some(field => 
           field && typeof field === 'string' && field.toLowerCase().includes(query)
         );
       });
-
-      // Sort remaining cards within their respective rarity groups
-      filteredAndSorted.sort((a, b) => {
-        if (sortOption === 'name-asc') return a.NAME.localeCompare(b.NAME);
-        if (sortOption === 'name-desc') return b.NAME.localeCompare(a.NAME);
-        if (sortOption === 'num-asc') return (Number(a["FUEL RQ."]) || 0) - (Number(b["FUEL RQ."]) || 0);
-        if (sortOption === 'num-desc') return (Number(b["FUEL RQ."]) || 0) - (Number(a["FUEL RQ."]) || 0);
-        if (sortOption === 'text-asc') return (a["CARD TYPE"] || "").localeCompare(b["CARD TYPE"] || "");
-        return 0;
-      });
-
-      renderCards(filteredAndSorted);
+    
+      // Sort across all cards when not using default
+      if (sortOption !== 'default') {
+        filteredAndSorted.sort((a, b) => {
+          if (sortOption === 'name-asc') return a.NAME.localeCompare(b.NAME);
+          if (sortOption === 'name-desc') return b.NAME.localeCompare(a.NAME);
+          if (sortOption === 'num-asc') return (Number(a["FUEL RQ."]) || 0) - (Number(b["FUEL RQ."]) || 0);
+          if (sortOption === 'num-desc') return (Number(b["FUEL RQ."]) || 0) - (Number(a["FUEL RQ."]) || 0);
+          if (sortOption === 'text-asc') return (a["CARD TYPE"] || "").localeCompare(b["CARD TYPE"] || "");
+          return 0;
+        });
+      }
+    
+      renderCards(filteredAndSorted, sortOption === 'default');
     }
 
   </script>
